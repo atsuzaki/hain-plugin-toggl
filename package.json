@@ -1,0 +1,22 @@
+{
+  "name": "hain-plugin-toggl",
+  "version": "1.0.0",
+  "description": "a hain Toggl integration",
+  "author": "atsuzaki",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atsuzaki/hain-plugin-toggl"
+  },
+  "keywords": [
+    "hain-0.6.0",
+    "hain",
+    "hain-plugin"
+  ],
+  "license": "MIT",
+  "hain": {
+    "prefix": "/tgl ",
+    "usage": "//TODO",
+    "icon": "//TODO"
+  }
+}
