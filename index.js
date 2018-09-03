@@ -10,16 +10,19 @@ const OPT_WO_MSG = ['-b', '-h']; //billable, help
 const OPT_WITH_MSG = ['-p', '-t']; //project, tag
 
 module.exports = (pluginContext) => {
+  const api = require('./api'); //figure out how to do these export bullshit
+  const ro = require('./respondObjects');
+
   const preferences = pluginContext.preferences;
-  const token = preferences.get().token;
+  const token = preferences.get().token + ':api_token';
+
+  let currentTimerId = -1;
 
   function startup() {
-      //TODO: on startup, show current timer and last tracked stuff?
   }
 
   function parseCommand(query, res) { //res is temp
-    const parsed = COMMANDS_RE.exec(query.toLowerCase()); //this doesnt parse w/o message
-
+    const parsed = COMMANDS_RE.exec(query.toLowerCase());
     if (!parsed){
       return; //TODO: prompt a command not found thingy
     }
@@ -27,39 +30,102 @@ module.exports = (pluginContext) => {
     res.add({
       id: 'test',
       payload: query,
-      title: `${parsed[1]} ${parsed[2]}`,
+      title: `${parsed[1]} : ${parsed[2]}`,
     });
+  }
+
+  function onStartUp(res) {
+    api.getRunning(token, pluginContext.logger)
+      .then((data) => {
+        if (data['id']) {
+          res.add({
+            id: 'timer',
+            title: `Hello ${data['id']}`,
+          });
+          currentTimerId = data['id'];
+        } 
+        {
+          res.add({
+            id: 'noTimer',
+            title: 'Timer is not running.',
+          });
+        }
+      },
+        (reason) => {
+          res.add({
+            id: 'error',
+            title: 'An error has occured',
+          });
+      });
+  }
+
+  function onStop(res) {
+    if (currentTimerId !== -1) {
+        res.add({
+          id: 'stop',
+          title: 'Stop current timer',
+        });
+      } else {
+        res.add({
+          id: 'stop',
+          title: 'Timer is not running.',
+        });
+    }
+  }
+
+  function onStart(res) {
+    if (currentTimerId !== -1) {
+        res.add({
+          id: 'start',
+          title: 'Stop ongoing timer and start new',
+        });
+      } else {
+        res.add({
+          id: 'stopAndStart',
+          title: 'Start Timer',
+        });
+    }
   }
 
   function search(query, res) {
     //show query for debugging
     res.add({
-        id: 'stop',
-        payload: query,
-        title: `${query}`,
+        id: 'debug',
+        title: `Timer id: ${currentTimerId} , ${query}`,
       });
 
-    if (query.toLowerCase() == 'stop') {
-      //TODO: check if timer is on
-      res.add({
-        id: 'stop',
-        payload: query,
-        title: `Stop current timer`,
-      });
+    let q = query.toLowerCase().trim();
+
+    if (q == '') {
+      onStartUp(res);
+    }
+    else if (q == 'stop') {
+      onStop(res);
     } 
-    else if (query.toLowerCase() == 'start') {
-      //TODO: check if timer is on
-      res.add({
-        id: 'start',
-        payload: query,
-        title: `Start timer`,
-      });
+    else if (q == 'start') {
+      onStart(res)
     }
     else parseCommand(query, res);
   }
 
   function execute(id, payload) {
+    switch(id){
+      case start:
+        api.startTimer(token);
+        break;
+      case stop:
+        api.stopTimer(token, currentTimerId);
+        break;
+      case stopAndStart:
+        api.stopTimer(token);
+        api.startTimer(token);
+        break;
+    }
   }
 
-  return { startup, search, execute };
+  // how does this method work?
+  function renderPreview(id, payload, render) {
+  }
+
+  return { startup, search, execute, renderPreview };
 };

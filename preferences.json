@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "token": {
+      "type": "password",
+      "title": "Your Toggl token (in your profile settings)",
+      "default": ""
+    }
+  }
+}

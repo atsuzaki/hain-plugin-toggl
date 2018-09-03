@@ -18,5 +18,8 @@
     "prefix": "/tgl ",
     "usage": "//TODO",
     "icon": "//TODO"
+  },
+  "dependencies": {
+    "node-fetch": "^2.2.0"
   }
 }
