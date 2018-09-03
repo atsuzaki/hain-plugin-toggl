@@ -36,14 +36,14 @@ module.exports = (pluginContext) => {
 
   function onStartUp(res) {
     api.getRunning(token, pluginContext.logger)
-      .then((data) => {
+      .then((data) => { 
         if (data['id']) {
           res.add({
             id: 'timer',
             title: `Hello ${data['id']}`,
           });
           currentTimerId = data['id'];
-        } 
+        } else 
         {
           res.add({
             id: 'noTimer',

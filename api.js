@@ -38,7 +38,12 @@ function getRunning(token, logger) {
     .then((res) => { 
       return res.json() })
     .then((data) => {
-      return data.data })
+      if (data.data){
+        return data.data;
+      } else {
+        return data;
+      }
+     })
     .catch(err => logger.log('Error:' + err));
 
   return req;
