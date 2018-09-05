@@ -46,9 +46,10 @@ module.exports = (pluginContext) => {
         } else 
         {
           res.add({
-            id: 'noTimer',
+            id: 'noAction',
             title: 'Timer is not running.',
           });
+          currentTimerId = -1;
         }
       },
         (reason) => {
@@ -67,22 +68,22 @@ module.exports = (pluginContext) => {
         });
       } else {
         res.add({
-          id: 'stop',
+          id: 'noAction',
           title: 'Timer is not running.',
         });
     }
   }
 
   function onStart(res) {
-    if (currentTimerId !== -1) {
+    if (currentTimerId == -1) {
         res.add({
           id: 'start',
-          title: 'Stop ongoing timer and start new',
+          title: 'Start Timer',
         });
       } else {
         res.add({
           id: 'stopAndStart',
-          title: 'Start Timer',
+          title: 'Stop ongoing timer and start new',
         });
     }
   }
@@ -109,14 +110,16 @@ module.exports = (pluginContext) => {
   }
 
   function execute(id, payload) {
+    //how to force refresh & empty query?
     switch(id){
-      case start:
+      case 'start':
         api.startTimer(token);
         break;
-      case stop:
-        api.stopTimer(token, currentTimerId);
+      case 'stop':
+        api.stopTimer(token, currentTimerId, pluginContext.logger);
+        currentTimerId = -1;
         break;
-      case stopAndStart:
+      case 'stopAndStart':
         api.stopTimer(token);
         api.startTimer(token);
         break;
