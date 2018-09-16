@@ -19,7 +19,7 @@ let dataObject = {
   start: {
     method: 'POST',
     headers: {},
-    data: '',
+    body: '',
   },
   stop: {
     method: 'PUT',
@@ -33,7 +33,6 @@ function getHeader(token) {
   return { ...dataObject.header, 'Authorization': auth};
 }
 
-//TODO: in case of 0 data, the promise just doesnt return. how to fix?
 function getRunning(token, logger) {
   let req = fetch(uri.GET_RUNNING, { ...dataObject.get, headers: getHeader(token) })
     .then((res) => { 
@@ -55,13 +54,18 @@ function stopTimer(token, currentTimerId, logger) {
   let stop = uri.STOP;
   stop = stop.replace("{time_entry_id}", currentTimerId);
 
-  fetch(stop, { ...dataObject.stop, headers: getHeader(token) })
+  return fetch(stop, { ...dataObject.stop, headers: getHeader(token) })
     .then((res) => {
       logger.log('Stop response status: ' + res.status + " " + res.statusText);
     });
 }
 
-function startTimer(token) {
+function startTimer(token, data, logger) {
+  let header = {...getHeader(token), "Content-Type": "application/json"};
+  return fetch(uri.START, { ...dataObject.start, headers: header, body: JSON.stringify(data)})
+    .then((res) => {
+      logger.log('Start response status: ' + res.status + " " + res.statusText);
+    });
 }
 
 module.exports.stopTimer = stopTimer;

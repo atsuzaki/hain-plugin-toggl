@@ -9,6 +9,12 @@ const MESSAGE_RE = /(([^-])+)/i
 const OPT_WO_MSG = ['-b', '-h']; //billable, help
 const OPT_WITH_MSG = ['-p', '-t']; //project, tag
 
+//TODO: check whats/how tid and wid?
+const TIME_ENTRY = {
+  description: '',
+  created_with: 'hain-plugin-toggl',
+}
+
 module.exports = (pluginContext) => {
   const api = require('./api'); //figure out how to do these export bullshit
   const ro = require('./respondObjects');
@@ -29,7 +35,7 @@ module.exports = (pluginContext) => {
 
     res.add({
       id: 'test',
-      payload: query,
+      payload: /*TODO*/ {},
       title: `${parsed[1]} : ${parsed[2]}`,
     });
   }
@@ -79,11 +85,13 @@ module.exports = (pluginContext) => {
         res.add({
           id: 'start',
           title: 'Start Timer',
+          payload: {time_entry: TIME_ENTRY},
         });
       } else {
         res.add({
           id: 'stopAndStart',
           title: 'Stop ongoing timer and start new',
+          payload: {time_entry: TIME_ENTRY},
         });
     }
   }
@@ -110,18 +118,20 @@ module.exports = (pluginContext) => {
   }
 
   function execute(id, payload) {
+    let logger = pluginContext.logger;
+
     //how to force refresh & empty query?
     switch(id){
       case 'start':
-        api.startTimer(token);
+        api.startTimer(token, payload, logger);
         break;
       case 'stop':
-        api.stopTimer(token, currentTimerId, pluginContext.logger);
+        api.stopTimer(token, currentTimerId, logger);
         currentTimerId = -1;
         break;
       case 'stopAndStart':
-        api.stopTimer(token);
-        api.startTimer(token);
+        api.stopTimer(token, currentTimerId, logger)
+          .then(() => {api.startTimer(token, payload, logger);});
         break;
     }
   }
